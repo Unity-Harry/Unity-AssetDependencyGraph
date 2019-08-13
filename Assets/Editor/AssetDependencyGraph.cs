@@ -1,9 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
+using UnityEditor.Experimental.UIElements;
+#if UNITY_2019_1_OR_NEWER
 using UnityEditor.Experimental.GraphView;
-using UnityEngine;
 using UnityEngine.UIElements;
+#else
+using UnityEditor.Experimental.UIElements.GraphView;
+using UnityEngine.Experimental.UIElements;
+using UnityEngine.Experimental.UIElements.StyleEnums;
+#endif
+using UnityEngine;
 
 public class AssetGraphView : GraphView
 {
@@ -37,6 +43,10 @@ public class AssetDependencyGraph : EditorWindow
 
     private readonly List<GraphElement>     m_AssetElements = new List<GraphElement>();
     private readonly List<Node>             m_DependenciesForPlacement = new List<Node>();
+    
+#if !UNITY_2019_1_OR_NEWER
+    private VisualElement rootVisualElement;
+#endif
         
     [MenuItem("Window/Analysis/Asset Dependency Graph")]
     public static void CreateTestGraphViewWindow()
@@ -76,7 +86,10 @@ public class AssetDependencyGraph : EditorWindow
         {
             text = "Clear"
         });
-
+        
+#if !UNITY_2019_1_OR_NEWER
+        rootVisualElement = this.GetRootVisualContainer();
+#endif
         rootVisualElement.Add(toolbar);
         rootVisualElement.Add(m_GraphView);
         m_GraphView.StretchToParentSize();
@@ -199,7 +212,11 @@ public class AssetDependencyGraph : EditorWindow
             infoContainer.Add(new Label
             {
                 text = assetPath,
+#if UNITY_2019_1_OR_NEWER
                 style = { whiteSpace = WhiteSpace.Normal }
+#else
+                style = { wordWrap = true }
+#endif
             });
 
             var typeName = obj.GetType().Name;
