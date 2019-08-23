@@ -6,6 +6,7 @@ using UnityEngine.UIElements;
 #else
 using UnityEditor.Experimental.UIElements.GraphView;
 using UnityEngine.Experimental.UIElements;
+using UnityEditor.Experimental.UIElements;
 using UnityEngine.Experimental.UIElements.StyleEnums;
 #endif
 using UnityEngine;
