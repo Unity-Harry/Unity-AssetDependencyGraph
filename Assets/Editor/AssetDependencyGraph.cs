@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Experimental.UIElements;
 #if UNITY_2019_1_OR_NEWER
@@ -19,7 +19,7 @@ public class AssetGraphView : GraphView
 
         this.AddManipulator(new ContentDragger());
         this.AddManipulator(new SelectionDragger());
-        this.AddManipulator( new RectangleSelector());
+        this.AddManipulator(new RectangleSelector());
         this.AddManipulator(new FreehandSelector());
 
         VisualElement background = new VisualElement
@@ -30,7 +30,7 @@ public class AssetGraphView : GraphView
             }
         };
         Insert(0, background);
-        
+
         background.StretchToParentSize();
     }
 }
@@ -38,21 +38,21 @@ public class AssetGraphView : GraphView
 public class AssetDependencyGraph : EditorWindow
 {
     private const float kNodeWidth = 250.0f;
-    
+
     private GraphView m_GraphView;
 
     private readonly List<GraphElement>     m_AssetElements = new List<GraphElement>();
     private readonly List<Node>             m_DependenciesForPlacement = new List<Node>();
-    
+
 #if !UNITY_2019_1_OR_NEWER
     private VisualElement rootVisualElement;
 #endif
-        
+
     [MenuItem("Window/Analysis/Asset Dependency Graph")]
     public static void CreateTestGraphViewWindow()
     {
-       var window = GetWindow<AssetDependencyGraph>();
-       window.titleContent = new GUIContent("Asset Dependency Graph");
+        var window = GetWindow<AssetDependencyGraph>();
+        window.titleContent = new GUIContent("Asset Dependency Graph");
     }
 
     public void OnEnable()
@@ -61,14 +61,14 @@ public class AssetDependencyGraph : EditorWindow
         {
             name = "Asset Dependency Graph",
         };
-        
+
         var toolbar = new VisualElement
         {
             style =
             {
                 flexDirection = FlexDirection.Row,
                 flexGrow = 0,
-                backgroundColor = new Color(0.25f, 0.25f, 0.25f, 0.75f)                
+                backgroundColor = new Color(0.25f, 0.25f, 0.25f, 0.75f)
             }
         };
 
@@ -86,7 +86,7 @@ public class AssetDependencyGraph : EditorWindow
         {
             text = "Clear"
         });
-        
+
 #if !UNITY_2019_1_OR_NEWER
         rootVisualElement = this.GetRootVisualContainer();
 #endif
@@ -110,24 +110,24 @@ public class AssetDependencyGraph : EditorWindow
 
             Group      groupNode      = new Group {title = obj.name};
             Object     mainObject     = AssetDatabase.LoadMainAssetAtPath(assetPath);
-            
+
             string[] dependencies    = AssetDatabase.GetDependencies(assetPath, false);
             bool     hasDependencies = dependencies.Length > 0;
-            
+
             Node mainNode  = CreateNode(mainObject, assetPath, true, hasDependencies);
 
             mainNode.SetPosition(new Rect(0, 0, 0, 0));
             m_GraphView.AddElement(groupNode);
             m_GraphView.AddElement(mainNode);
-            
+
             groupNode.AddElement(mainNode);
-            
+
             CreateDependencyNodes(dependencies, mainNode, groupNode, 1);
 
             m_AssetElements.Add(mainNode);
             m_AssetElements.Add(groupNode);
             groupNode.capabilities &= ~Capabilities.Deletable;
-            
+
             groupNode.Focus();
 
             mainNode.RegisterCallback<GeometryChangedEvent>(UpdateDependencyNodePlacement);
@@ -143,7 +143,7 @@ public class AssetDependencyGraph : EditorWindow
 
             Node dependencyNode = CreateNode(dependencyAsset, AssetDatabase.GetAssetPath(dependencyAsset),
                 false, deeperDependencies.Length > 0);
-            
+
             dependencyNode.userData = depth;
             CreateDependencyNodes(deeperDependencies, dependencyNode, groupNode, depth + 1);
 
@@ -188,15 +188,15 @@ public class AssetDependencyGraph : EditorWindow
             {
                 Selection.activeObject = obj;
             })
-            {
-                style =
                 {
-                    height = 16.0f,
-                    alignSelf = Align.Center,
-                    alignItems = Align.Center
-                },
-                text = "Select"
-            });
+                    style =
+                    {
+                        height = 16.0f,
+                        alignSelf = Align.Center,
+                        alignItems = Align.Center
+                    },
+                    text = "Select"
+                });
 
             var infoContainer = new VisualElement
             {
@@ -232,9 +232,9 @@ public class AssetDependencyGraph : EditorWindow
                 text = $"Type: {typeName}"
             };
             infoContainer.Add(typeLabel);
-            
+
             objNode.extensionContainer.Add(infoContainer);
-            
+
             Texture assetTexture = AssetPreview.GetAssetPreview(obj);
             if (!assetTexture)
                 assetTexture = AssetPreview.GetMiniThumbnail(obj);
@@ -256,7 +256,7 @@ public class AssetDependencyGraph : EditorWindow
                     }
                 });
             }
-            
+
             // Ports
             if (!isMainNode)
             {
@@ -302,7 +302,7 @@ public class AssetDependencyGraph : EditorWindow
             m_GraphView.RemoveElement(edge);
         }
         m_AssetElements.Clear();
-        
+
         foreach (var node in m_AssetElements)
         {
             m_GraphView.RemoveElement(node);
@@ -317,25 +317,25 @@ public class AssetDependencyGraph : EditorWindow
 
         foreach (var node in m_DependenciesForPlacement)
         {
-            int depth = (int) node.userData;
-            
+            int depth = (int)node.userData;
+
             if (!depthYOffset.ContainsKey(depth))
                 depthYOffset.Add(depth, 0.0f);
-            
+
             depthYOffset[depth] += node.layout.height;
         }
 
         // Move half of the node into negative y space so they're on either size of the main node
-        for(int i = 1; i <= depthYOffset.Count; ++i)
+        for (int i = 1; i <= depthYOffset.Count; ++i)
             depthYOffset[i] = 0 - depthYOffset[i] / 2.0f;
 
         foreach (var node in m_DependenciesForPlacement)
         {
-            int depth = (int) node.userData;
+            int depth = (int)node.userData;
             node.SetPosition(new Rect(kNodeWidth * 1.5f * depth, depthYOffset[depth], 0, 0));
             depthYOffset[depth] += node.layout.height;
         }
-        
+
         m_DependenciesForPlacement.Clear();
     }
 }
