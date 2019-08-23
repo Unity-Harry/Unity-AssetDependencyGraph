@@ -41,8 +41,9 @@ public class AssetDependencyGraph : EditorWindow
 
     private GraphView m_GraphView;
 
-    private readonly List<GraphElement>     m_AssetElements = new List<GraphElement>();
-    private readonly List<Node>             m_DependenciesForPlacement = new List<Node>();
+    private readonly List<GraphElement>        m_AssetElements  = new List<GraphElement>();
+    private readonly Dictionary<string, Node>  m_GUIDNodeLookup = new Dictionary<string, Node>();
+    private readonly List<Node>                m_DependenciesForPlacement = new List<Node>();
 
 #if !UNITY_2019_1_OR_NEWER
     private VisualElement rootVisualElement;
@@ -104,34 +105,34 @@ public class AssetDependencyGraph : EditorWindow
     private void ExplodeAsset()
     {
         Object obj = Selection.activeObject;
-        if (obj)
-        {
-            string assetPath = AssetDatabase.GetAssetPath(obj);
+        if (!obj)
+            return;
 
-            Group      groupNode      = new Group {title = obj.name};
-            Object     mainObject     = AssetDatabase.LoadMainAssetAtPath(assetPath);
+        string assetPath = AssetDatabase.GetAssetPath(obj);
 
-            string[] dependencies    = AssetDatabase.GetDependencies(assetPath, false);
-            bool     hasDependencies = dependencies.Length > 0;
+        Group      groupNode      = new Group {title = obj.name};
+        Object     mainObject     = AssetDatabase.LoadMainAssetAtPath(assetPath);
 
-            Node mainNode  = CreateNode(mainObject, assetPath, true, hasDependencies);
+        string[] dependencies    = AssetDatabase.GetDependencies(assetPath, false);
+        bool     hasDependencies = dependencies.Length > 0;
 
-            mainNode.SetPosition(new Rect(0, 0, 0, 0));
-            m_GraphView.AddElement(groupNode);
-            m_GraphView.AddElement(mainNode);
+        Node mainNode  = CreateNode(mainObject, assetPath, true, hasDependencies);
 
-            groupNode.AddElement(mainNode);
+        mainNode.SetPosition(new Rect(0, 0, 0, 0));
+        m_GraphView.AddElement(groupNode);
+        m_GraphView.AddElement(mainNode);
 
-            CreateDependencyNodes(dependencies, mainNode, groupNode, 1);
+        groupNode.AddElement(mainNode);
 
-            m_AssetElements.Add(mainNode);
-            m_AssetElements.Add(groupNode);
-            groupNode.capabilities &= ~Capabilities.Deletable;
+        CreateDependencyNodes(dependencies, mainNode, groupNode, 1);
 
-            groupNode.Focus();
+        m_AssetElements.Add(mainNode);
+        m_AssetElements.Add(groupNode);
+        groupNode.capabilities &= ~Capabilities.Deletable;
 
-            mainNode.RegisterCallback<GeometryChangedEvent>(UpdateDependencyNodePlacement);
-        }
+        groupNode.Focus();
+
+        mainNode.RegisterCallback<GeometryChangedEvent>(UpdateDependencyNodePlacement);
     }
 
     private void CreateDependencyNodes(string[] dependencies, Node parentNode, Group groupNode, int depth)
@@ -145,31 +146,41 @@ public class AssetDependencyGraph : EditorWindow
                 false, deeperDependencies.Length > 0);
 
             dependencyNode.userData = depth;
+
             CreateDependencyNodes(deeperDependencies, dependencyNode, groupNode, depth + 1);
 
-            m_GraphView.AddElement(dependencyNode);
+            if (!m_GraphView.Contains(dependencyNode))
+                m_GraphView.AddElement(dependencyNode);
 
             Edge edge = new Edge
             {
                 input = dependencyNode.inputContainer[0] as Port,
                 output = parentNode.outputContainer[0] as Port,
             };
-            edge.input.Connect(edge);
-            edge.output.Connect(edge);
+            edge.input?.Connect(edge);
+            edge.output?.Connect(edge);
 
             dependencyNode.RefreshPorts();
             m_GraphView.AddElement(edge);
-            groupNode.AddElement(dependencyNode);
+
+            if (!m_AssetElements.Contains(dependencyNode))
+                groupNode.AddElement(dependencyNode);
+
             edge.capabilities &= ~Capabilities.Deletable;
             m_AssetElements.Add(edge);
             m_AssetElements.Add(dependencyNode);
-            m_DependenciesForPlacement.Add(dependencyNode);
+
+            if (!m_DependenciesForPlacement.Contains(dependencyNode))
+                m_DependenciesForPlacement.Add(dependencyNode);
         }
     }
 
     private Node CreateNode(Object obj, string assetPath, bool isMainNode, bool hasDependencies)
     {
-        Node    resultNode = null;
+        Node resultNode;
+        string assetGUID = AssetDatabase.AssetPathToGUID(assetPath);
+        if (m_GUIDNodeLookup.TryGetValue(assetGUID, out resultNode))
+            return resultNode;
 
         if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var assetGuid, out long assetID))
         {
@@ -285,6 +296,7 @@ public class AssetDependencyGraph : EditorWindow
             resultNode.capabilities |= Capabilities.Collapsible;
         }
 
+        m_GUIDNodeLookup[assetGUID] = resultNode;
         return resultNode;
     }
 
@@ -308,6 +320,7 @@ public class AssetDependencyGraph : EditorWindow
             m_GraphView.RemoveElement(node);
         }
         m_AssetElements.Clear();
+        m_GUIDNodeLookup.Clear();
     }
 
     private void UpdateDependencyNodePlacement(GeometryChangedEvent e)
@@ -325,7 +338,7 @@ public class AssetDependencyGraph : EditorWindow
             depthYOffset[depth] += node.layout.height;
         }
 
-        // Move half of the node into negative y space so they're on either size of the main node
+        // Move half of the node into negative y space so they're on either size of the main node in y axis
         for (int i = 1; i <= depthYOffset.Count; ++i)
             depthYOffset[i] = 0 - depthYOffset[i] / 2.0f;
 
