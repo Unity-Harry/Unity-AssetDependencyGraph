@@ -182,7 +182,7 @@ public class AssetDependencyGraph : EditorWindow
         if (m_GUIDNodeLookup.TryGetValue(assetGUID, out resultNode))
             return resultNode;
 
-        if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var assetGuid, out long assetID))
+        if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var assetGuid, out long _))
         {
             var objNode = new Node
             {
@@ -233,9 +233,9 @@ public class AssetDependencyGraph : EditorWindow
             var typeName = obj.GetType().Name;
             if (isMainNode)
             {
-                var prefabType = PrefabUtility.GetPrefabType(obj);
-                if (prefabType != PrefabType.None)
-                    typeName = prefabType.ToString();
+                var prefabType = PrefabUtility.GetPrefabAssetType(obj);
+                if (prefabType != PrefabAssetType.NotAPrefab)
+                    typeName = $"{prefabType} Prefab";
             }
 
             var typeLabel = new Label
