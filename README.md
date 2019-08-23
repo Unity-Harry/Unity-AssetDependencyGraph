@@ -5,7 +5,7 @@ This project provides a basic Asset Dependency Graph for Unity using the new [Gr
 ![](Images/Example.png?raw=true)
 
 ## Install instructions
-Simply copy the [AssetDependencyGraph](Assets/Editor/AssetDependencyGraph.cs) c# script into your existing project
+Simply copy the [AssetDependencyGraph](Assets/Editor/AssetDependencyGraph.cs) C# script into your existing project
 
 Any questions? Ask [@peanutbuffer](https://twitter.com/PeanutBuffer)
 
