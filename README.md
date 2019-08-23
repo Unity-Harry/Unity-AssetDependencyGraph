@@ -10,6 +10,7 @@ Simply copy the [AssetDependencyGraph](Assets/Editor/AssetDependencyGraph.cs) C#
 ## Usage
 
 The Asset Dependency Graph Window can be opened via the `Window > Analysis >Asset Dependency Graph` file menu
+
 ![](Images/Usage.png?raw=true)
 
 Once the window is open:
