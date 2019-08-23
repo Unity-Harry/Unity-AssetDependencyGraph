@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.Experimental.UIElements;
 #if UNITY_2019_1_OR_NEWER
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
@@ -145,7 +144,8 @@ public class AssetDependencyGraph : EditorWindow
             Node dependencyNode = CreateNode(dependencyAsset, AssetDatabase.GetAssetPath(dependencyAsset),
                 false, deeperDependencies.Length > 0);
 
-            dependencyNode.userData = depth;
+            if (!m_AssetElements.Contains(dependencyNode))
+                dependencyNode.userData = depth;
 
             CreateDependencyNodes(deeperDependencies, dependencyNode, groupNode, depth + 1);
 
@@ -180,7 +180,11 @@ public class AssetDependencyGraph : EditorWindow
         Node resultNode;
         string assetGUID = AssetDatabase.AssetPathToGUID(assetPath);
         if (m_GUIDNodeLookup.TryGetValue(assetGUID, out resultNode))
+        {
+            int currentDepth = (int)resultNode.userData;
+            resultNode.userData = currentDepth + 1;
             return resultNode;
+        }
 
         if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var assetGuid, out long _))
         {
@@ -198,6 +202,7 @@ public class AssetDependencyGraph : EditorWindow
             objNode.titleContainer.Add(new Button(() =>
             {
                 Selection.activeObject = obj;
+                EditorGUIUtility.PingObject(obj);
             })
                 {
                     style =
@@ -272,7 +277,7 @@ public class AssetDependencyGraph : EditorWindow
             if (!isMainNode)
             {
                 Port realPort = objNode.InstantiatePort(Orientation.Horizontal, Direction.Input, Port.Capacity.Single, typeof(Object));
-                realPort.portName = "Dependant";
+                realPort.portName = "Dependent";
                 objNode.inputContainer.Add(realPort);
             }
 
@@ -339,8 +344,15 @@ public class AssetDependencyGraph : EditorWindow
         }
 
         // Move half of the node into negative y space so they're on either size of the main node in y axis
-        for (int i = 1; i <= depthYOffset.Count; ++i)
-            depthYOffset[i] = 0 - depthYOffset[i] / 2.0f;
+        var depths = new List<int>(depthYOffset.Keys);
+        foreach (int depth in depths)
+        {
+            if (depth == 0)
+                continue;
+
+            float offset = depthYOffset[depth];
+            depthYOffset[depth] = (0f - offset / 2.0f);
+        }
 
         foreach (var node in m_DependenciesForPlacement)
         {
