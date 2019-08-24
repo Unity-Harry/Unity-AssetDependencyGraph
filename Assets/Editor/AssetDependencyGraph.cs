@@ -104,6 +104,10 @@ public class AssetDependencyGraph : EditorWindow
 
     private void ExplodeAsset()
     {
+        Transform tr = Selection.activeTransform;
+        if (tr)
+            return;
+
         Object obj = Selection.activeObject;
         if (!obj)
             return;
