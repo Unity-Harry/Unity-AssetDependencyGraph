@@ -79,7 +79,7 @@ public class AssetDependencyGraph : EditorWindow
         };
 
         toolbar.Add(options);
-        toolbar.Add(new Button(ExplodeAsset)
+        toolbar.Add(new Button(ExploreAsset)
         {
             text = "Explore Asset",
         });
@@ -102,12 +102,12 @@ public class AssetDependencyGraph : EditorWindow
         rootVisualElement.Remove(m_GraphView);
     }
 
-    private void ExplodeAsset()
+    private void ExploreAsset()
     {
         Object obj = Selection.activeObject;
         string assetPath = AssetDatabase.GetAssetPath(obj);
 
-        // assetPath will be empty is obj is null or isn't an asset (a scene object)
+        // assetPath will be empty if obj is null or isn't an asset (a scene object)
         if (obj == null || string.IsNullOrEmpty(assetPath))
             return;
 
