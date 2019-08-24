@@ -5,7 +5,8 @@ This project provides a basic Asset Dependency Graph for Unity using the new [Gr
 ![](Images~/Example.png?raw=true)
 
 ## Install instructions
-Clone and Add this GitHub repository as a local package using Package Manager.
+1. Close Unity and open the `Packages/manifest.json` file
+2. Add `"com.harryrose.assetdependencygraph": "https://github.com/Unity-Harry/Unity-AssetDependencyGraph.git",` to the `dependencies` section
 
 ## Usage
 

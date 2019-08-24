@@ -1,7 +1,12 @@
 {
-    "name": "com.unityharry.assetdependencygraph",
+    "name": "com.harryrose.assetdependencygraph",
     "displayName": "Asset Dependency Graph",
     "version": "1.0.0",
     "unity": "2018.3",
-    "description": "Asset dependency graph visualizer."
+    "description": "The Asset Dependency Graph tool allows you to visualize an asset’s dependency chain",
+    "type" : "tool",
+    "author": {
+        "name": "Harry Rose",
+        "url": "https://www.twitter.com/peanutbuffer"
+    }
 }
