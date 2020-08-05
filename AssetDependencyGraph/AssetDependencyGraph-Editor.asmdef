@@ -1,14 +1,17 @@
 {
     "name": "AssetDependencyGraph-Editor",
     "references": [],
-    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": []
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "AutomaticGraphLayout.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

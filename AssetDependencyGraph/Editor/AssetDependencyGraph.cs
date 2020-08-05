@@ -3,6 +3,7 @@ using UnityEditor;
 #if UNITY_2019_1_OR_NEWER
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 #else
 using UnityEditor.Experimental.UIElements.GraphView;
 using UnityEngine.Experimental.UIElements;
@@ -40,6 +41,7 @@ public class AssetDependencyGraph : EditorWindow
     private const float kNodeWidth = 250.0f;
 
     private GraphView m_GraphView;
+    private bool m_UseAutoLayout = true;
 
     private readonly List<GraphElement>        m_AssetElements  = new List<GraphElement>();
     private readonly Dictionary<string, Node>  m_GUIDNodeLookup = new Dictionary<string, Node>();
@@ -87,6 +89,13 @@ public class AssetDependencyGraph : EditorWindow
         {
             text = "Clear"
         });
+
+        var toggle = new ToolbarToggle() {
+            text = "Auto Layout",
+            value = m_UseAutoLayout
+        };
+        toggle.RegisterValueChangedCallback(x => { m_UseAutoLayout = x.newValue; });
+        toolbar.Add(toggle);
 
 #if !UNITY_2019_1_OR_NEWER
         rootVisualElement = this.GetRootVisualContainer();
@@ -330,8 +339,10 @@ public class AssetDependencyGraph : EditorWindow
         m_GUIDNodeLookup.Clear();
     }
 
-    private void UpdateDependencyNodePlacement(GeometryChangedEvent e)
-    {
+    private void UpdateDependencyNodePlacement(GeometryChangedEvent e) {
+        var element = e.target as VisualElement;
+        element.UnregisterCallback<GeometryChangedEvent>(UpdateDependencyNodePlacement);
+        
         // The current y offset in per depth
         var depthYOffset  = new Dictionary<int, float>();
 
@@ -364,5 +375,20 @@ public class AssetDependencyGraph : EditorWindow
         }
 
         m_DependenciesForPlacement.Clear();
+        
+        if(m_UseAutoLayout) {
+            // run graph improvements on top
+            var layouter = new GraphViewLayouter();
+            layouter.Adjust(m_GraphView);
+        }
+        
+        element.RegisterCallback<GeometryChangedEvent>(FrameOnce);
+    }
+
+    private void FrameOnce(GeometryChangedEvent e) {
+        if (e.target is VisualElement element)
+            element.UnregisterCallback<GeometryChangedEvent>(FrameOnce);
+        
+        m_GraphView.FrameAll();
     }
 }
