@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
 #if UNITY_2019_1_OR_NEWER
 using UnityEditor.Experimental.GraphView;
 using UnityEngine.UIElements;
@@ -87,6 +88,25 @@ public class AssetDependencyGraph : EditorWindow
         {
             text = "Clear"
         });
+        
+        var ts = new ToolbarSearchField();
+        ts.RegisterValueChangedCallback(x => {
+            if (string.IsNullOrEmpty(x.newValue)) {
+                m_GraphView.FrameAll();
+                return;
+            }
+            
+            m_GraphView.ClearSelection();
+            // m_GraphView.graphElements.ForEach(y => { // BROKEN, Case 1268337
+            m_GraphView.graphElements.ToList().ForEach(y => {
+                if (y is Node node && y.title.Contains(x.newValue)) {
+                    m_GraphView.AddToSelection(node);
+                }
+            });
+            
+            m_GraphView.FrameSelection();
+        });
+        toolbar.Add(ts);
 
 #if !UNITY_2019_1_OR_NEWER
         rootVisualElement = this.GetRootVisualContainer();
@@ -118,6 +138,7 @@ public class AssetDependencyGraph : EditorWindow
         bool     hasDependencies = dependencies.Length > 0;
 
         Node mainNode  = CreateNode(mainObject, assetPath, true, hasDependencies);
+        mainNode.userData = 0;
 
         mainNode.SetPosition(new Rect(0, 0, 0, 0));
         m_GraphView.AddElement(groupNode);
@@ -332,6 +353,8 @@ public class AssetDependencyGraph : EditorWindow
 
     private void UpdateDependencyNodePlacement(GeometryChangedEvent e)
     {
+        (e.target as VisualElement).UnregisterCallback<GeometryChangedEvent>(UpdateDependencyNodePlacement);
+        
         // The current y offset in per depth
         var depthYOffset  = new Dictionary<int, float>();
 
