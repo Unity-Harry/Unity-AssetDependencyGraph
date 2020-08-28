@@ -99,7 +99,7 @@ public class AssetDependencyGraph : EditorWindow
             m_GraphView.ClearSelection();
             // m_GraphView.graphElements.ForEach(y => { // BROKEN, Case 1268337
             m_GraphView.graphElements.ToList().ForEach(y => {
-                if (y is Node node && y.title.Contains(x.newValue)) {
+                if (y is Node node && y.title.IndexOf(x.newValue, StringComparison.OrdinalIgnoreCase) >= 0) {
                     m_GraphView.AddToSelection(node);
                 }
             });
