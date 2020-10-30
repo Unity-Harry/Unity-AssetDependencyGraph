@@ -1,4 +1,5 @@
 # Unity - Asset Dependency Graph 
+[![openupm](https://img.shields.io/npm/v/com.harryrose.assetdependencygraph?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.harryrose.assetdependencygraph/)
 
 New License and Contribution Guidelines: 28/10/2020
 
@@ -7,6 +8,16 @@ This project provides a basic Asset Dependency Graph for Unity using the new [Gr
 ![](Images~/Example.png?raw=true)
 
 ## Install instructions
+
+### Install via OpenUPM
+
+The package is available on the [openupm registry](https://openupm.com). It's recommended to install it via [openupm-cli](https://github.com/openupm/openupm-cli).
+
+```
+openupm add com.harryrose.assetdependencygraph
+```
+
+### Install via git url
 1. Close Unity and open the `Packages/manifest.json` file
 2. Add `"com.harryrose.assetdependencygraph": "https://github.com/Unity-Harry/Unity-AssetDependencyGraph.git",` to the `dependencies` section
 
