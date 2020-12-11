@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -11,6 +12,7 @@ using UnityEditor.Experimental.UIElements;
 using UnityEngine.Experimental.UIElements.StyleEnums;
 #endif
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 public class AssetGraphView : GraphView
 {
